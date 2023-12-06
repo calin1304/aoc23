@@ -13,7 +13,6 @@ import           Test.Hspec
 import           Data.Char          (isDigit)
 import           Data.List          (isPrefixOf)
 import           Data.Maybe         (fromJust)
-import           Text.Regex.TDFA
 
 
 solve1 :: String -> Int
@@ -28,9 +27,9 @@ solve2 = sum . map go . lines
     go :: String -> Int
     go s =
         (uncurry (+) . first (*10))
-        . (f *** f)
-        . (head &&& last)
-        $ g s []
+            . (f *** f)
+            . (head &&& last)
+            $ g s []
 
     f :: String -> Int
     f s = if isDigit (head s) then read s else fromJust $ lookup s tbl
