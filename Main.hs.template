@@ -1,0 +1,46 @@
+{-# LANGUAGE CPP              #-}
+{-# LANGUAGE TypeApplications #-}
+
+module Main where
+
+import           Control.Arrow
+import           Debug.Trace
+import           System.Environment (getArgs)
+import           Test.Hspec
+
+------------
+-- Part 1 --
+------------
+
+solve1 :: String -> _
+solve1 = undefined
+
+------------
+-- Part 2 --
+------------
+
+solve2 :: String -> _
+solve2 = undefined
+
+------------
+-- Driver --
+------------
+
+main :: IO ()
+main =
+#ifdef TEST
+    test
+#else
+    readFile "input" >>= putStrLn . show . solve2
+#endif
+
+test :: IO ()
+test = hspec $ do
+    describe "part 1" $ do
+        it "works with sample" $ do
+            d <- readFile "sample_1.txt"
+            solve1 d `shouldBe` _
+    describe "part 2" $ do
+        it "works with sample" $ do
+            d <- readFile "sample_2.txt"
+            solve2 d `shouldBe` _
