@@ -1,9 +1,11 @@
 {-# LANGUAGE CPP              #-}
+{-# LANGUAGE LambdaCase       #-}
 {-# LANGUAGE TypeApplications #-}
 
 module Main where
 
 import           Control.Arrow
+import           Data.Function
 import           Debug.Trace
 import           System.Environment (getArgs)
 import           Test.Hspec
@@ -42,11 +44,9 @@ names = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
 g :: String -> [String] -> [String]
 g "" acc = reverse acc
 g s@(c:cs) acc =
-    let pfx = filter (`isPrefixOf` s) names
-     in
-    case pfx of
-        (x:xs) -> g cs (x : acc)
-        _      -> g cs acc
+    g cs $ case filter (`isPrefixOf` s) names of
+        (x:xs) -> (x : acc)
+        _      -> acc
 
 ------------
 -- Driver --
