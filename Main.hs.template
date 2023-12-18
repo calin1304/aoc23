@@ -28,10 +28,12 @@ solve2 = undefined
 
 main :: IO ()
 main =
-#ifdef TEST
-    test
-#else
+#elif p1
+    readFile "input" >>= putStrLn . show . solve1
+#elif p2
     readFile "input" >>= putStrLn . show . solve2
+#else
+    test
 #endif
 
 test :: IO ()
