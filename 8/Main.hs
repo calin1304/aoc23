@@ -11,8 +11,6 @@ import           Data.Function              ((&))
 import           Data.Map.Strict            (Map)
 import qualified Data.Map.Strict            as Map
 import           Data.Maybe                 (fromJust)
-import           Data.Vector                (Vector)
-import qualified Data.Vector                as V
 import           Data.Void                  (Void)
 import           Debug.Trace
 import           System.Environment         (getArgs)
@@ -30,11 +28,6 @@ type Vertex = String
 type Edge = (String, String)
 type Graph = Map Vertex (Vertex, Vertex)
 
-type AdjMatrix = Vector (Vertex, Vertex)
-
--- toMatrix :: Graph -> AdjMatrix
--- toMatrix g = V.generate 26 (\i -> fromJust (Map.lookup i g))
-
 ------------
 -- Part 1 --
 ------------
@@ -44,14 +37,20 @@ dst = ord 'Z' - ord 'A'
 
 solve1 :: String -> Int
 solve1 =
-    length
-        . takeWhile (/= "ZZZ")
-        . (\(d, g) -> scanl (step g) "AAA" (cycle d))
+    solve "AAA" (== "ZZZ")
+        . first cycle
         . either (error . show) id
         . parse
 
-step :: Graph -> Vertex -> Step -> Vertex
-step g v s =
+solve :: String -> (String -> Bool) -> ([Step], Graph) -> Int
+solve initialState checkFinalState (instructions, network) = 
+    length
+        . takeWhile (not . checkFinalState)
+        $ scanl (flip (step network)) initialState instructions
+    
+
+step :: Graph -> Step -> Vertex -> Vertex
+step g s v =
     case s of
         L -> l
         R -> r
@@ -101,13 +100,33 @@ parens = MP.between (MP.char '(') (MP.char ')')
 tuple :: Parser a -> Parser b -> Parser (a, b)
 tuple l r = parens ((,) <$> l <* comma <* MP.hspace <*> r)
 
-
 ------------
 -- Part 2 --
 ------------
 
--- solve2 :: String -> _
-solve2 = undefined
+isStart, isEnd :: String -> Bool
+isStart = endsWith 'A'
+isEnd = endsWith 'Z'
+
+endsWith :: Char -> String -> Bool
+endsWith c (_:_:[c']) = c == c'
+
+isFinalState :: String -> Bool 
+isFinalState = isEnd
+
+initialState :: Graph -> [Vertex]
+initialState = filter isStart . Map.keys
+
+solve2 =
+    foldr1 lcm 
+        . (\(instr, network) ->
+                map
+                    (\i -> solve i isFinalState (instr, network))
+                    (initialState network)
+        )
+        . first cycle
+        . either (error . show) id
+        . parse
 
 ------------
 -- Driver --
@@ -132,7 +151,7 @@ test = hspec $ do
         it "works with  sample 2" $ do
             d <- readFile "sample_2.txt"
             solve1 d `shouldBe` 6
-    -- describe "part 2" $ do
-    --     it "works with sample" $ do
-    --         d <- readFile "sample_2.txt"
-    --         solve2 d `shouldBe` _
+    describe "part 2" $ do
+        it "works with sample" $ do
+            d <- readFile "sample_2.txt"
+            solve2 d `shouldBe` 6
