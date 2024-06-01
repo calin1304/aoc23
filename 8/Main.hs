@@ -7,9 +7,12 @@ import           Control.Arrow
 import qualified Data.Bifunctor             as B (first)
 import           Data.Char                  (ord)
 import           Data.Either                (fromRight)
+import           Data.Function              ((&))
 import           Data.Map.Strict            (Map)
 import qualified Data.Map.Strict            as Map
 import           Data.Maybe                 (fromJust)
+import           Data.Vector                (Vector)
+import qualified Data.Vector                as V
 import           Data.Void                  (Void)
 import           Debug.Trace
 import           System.Environment         (getArgs)
@@ -23,9 +26,14 @@ import qualified Text.Megaparsec.Debug      as MP
 data Step = R | L deriving (Show)
 type Steps = [Step]
 
-type Vertex = Int
-type Edge = (Vertex, Vertex)
+type Vertex = String
+type Edge = (String, String)
 type Graph = Map Vertex (Vertex, Vertex)
+
+type AdjMatrix = Vector (Vertex, Vertex)
+
+-- toMatrix :: Graph -> AdjMatrix
+-- toMatrix g = V.generate 26 (\i -> fromJust (Map.lookup i g))
 
 ------------
 -- Part 1 --
@@ -37,9 +45,8 @@ dst = ord 'Z' - ord 'A'
 solve1 :: String -> Int
 solve1 =
     length
-        . takeWhile (/= dst)
-        . (\(d, g) -> traceShow (head d) $ scanl (step g) 0 d)
-        . first cycle
+        . takeWhile (/= "ZZZ")
+        . (\(d, g) -> scanl (step g) "AAA" (cycle d))
         . either (error . show) id
         . parse
 
@@ -76,11 +83,11 @@ pGraph = post <$> MP.many (pEdges <* MP.newline)
     pEdges :: Parser (Vertex, (Vertex, Vertex))
     pEdges = (,) <$> (pVertex <* MP.hspace <* equal <* MP.hspace) <*> pDsts
 
-    pDsts :: Parser (Int, Int)
+    pDsts :: Parser (Vertex, Vertex)
     pDsts = tuple pVertex pVertex
 
-    pVertex :: Parser Int
-    pVertex = toInt . head <$> MP.count 3 MP.upperChar
+    pVertex :: Parser Vertex
+    pVertex = MP.count 3 MP.upperChar
 
     toInt :: Char -> Int
     toInt c = ord c - ord 'A'
